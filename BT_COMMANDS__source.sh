@@ -159,15 +159,19 @@ BT_COMMANDS_RESET()
 ###########################
 # BT_COMMANDS_EXECUTE
 ###########################
+# Executes the commands that are in the BT_COMMANDS_IN variable.
 BT_COMMANDS_EXECUTE()
 {
   # Gets the number of processors, if fails to find /proc/cpuinfo
   # sets the value of GET_PROCS to 1
   GET_PROCS=$( grep -c "^$" /proc/cpuinfo 2>/dev/null ) || GET_PROCS="1"
+  GET_LIMIT=$( ulimit -u 2>/dev/null )                  || GET_LIMIT=512
 
   # Sets the number of max threads and multiplies it if BT_THREADS_MAX
   # is already not already set
-  BT_THREADS_MAX=${BT_THREADS_MAX:-$(( GET_PROCS * 2 ))}
+  BT_THREADS_MULTIPLIER=2
+  BT_THREADS_MAX=${BT_THREADS_MAX:-$(( GET_PROCS * BT_THREADS_MULTIPLIER ))}
+  [ ${BT_THREADS_MAX} -ge ${GET_LIMIT} ] && BT_THREADS_MAX=$(( GET_LIMIT - 1 ))
 
   #
   BT_SLEEP_TIME=${BT_SLEEP_TIME:-$(sleep .15 && echo .15 || echo 1)}
@@ -195,7 +199,7 @@ BT_COMMANDS_EXECUTE()
           else
                 for THREAD_PID in ${!BT_THREADS_CUR[@]} ; do
                     [ ! -d /proc/${THREAD_PID} ] && unset BT_THREADS_CUR[${THREAD_PID}]
-                    zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2 ; 
+                    zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
                     printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads used." >&2
                 done
           fi
