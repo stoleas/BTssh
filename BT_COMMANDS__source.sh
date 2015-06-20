@@ -187,8 +187,6 @@ BT_COMMANDS_EXECUTE()
     while [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ] || [ ${#BT_THREADS_CUR[@]} -gt 0 ] ; do
           if    [ ${#BT_THREADS_CUR[@]} -lt ${BT_THREADS_MAX:-4} ] && [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ]
           then
-                zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
-                printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads used." >&2
                 LOG_FILE=/tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.log
                 ERR_FILE=/tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.err
                 touch "${LOG_FILE}" "${ERR_FILE}" && chmod 600  "${LOG_FILE}" "${ERR_FILE}"
@@ -199,10 +197,10 @@ BT_COMMANDS_EXECUTE()
           else
                 for THREAD_PID in ${!BT_THREADS_CUR[@]} ; do
                     [ ! -d /proc/${THREAD_PID} ] && unset BT_THREADS_CUR[${THREAD_PID}]
-                    zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
-                    printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads used." >&2
                 done
           fi
+          zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
+          printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads used." >&2
           zzDISP_POS=$(( zzDISP_POS + 1 )) ; [ ${zzDISP_POS} -gt ${#CUR_POS[@]} ] && zzDISP_POS=0
           sleep ${BT_SLEEP_TIME:-1}
     done
