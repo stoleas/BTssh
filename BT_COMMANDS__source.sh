@@ -94,22 +94,7 @@ zzDISPLAY_PCT_STATUS()
           ###########################
           # Print Status
           ###########################
-          CUR_POS=(
-                    "   "
-                    ".  "
-                    ".. "
-                    "..."
-                    " .."
-                    "  ."
-                    "   "
-                    "   "
-                    "  ."
-                    " .."
-                    "..."
-                    ".. "
-                    ".  "
-                    "   "
-                  )
+          CUR_POS=( "   " ".  " ".. " "..." " .." "  ." "   " "   " "  ." " .." "..." ".. " ".  " "   " )
           printf  "${CLEAR_LINE}${DPS_COLOR_BASE//X;Y/${DPS_COLOR_BY_PCT[${DPS_PCT_COLOR}]}}" >&2
           printf  " ${CUR_POS[zzDISP_POS]:-   } Processing ${DPS_PCT_VALUE[1]}%% ( ${DPS_CUR_VALUE} / ${DPS_MAX_VALUE} pid: $$ )"
           printf  "${DPS_COLOR_RESET}" >&2
@@ -206,13 +191,13 @@ BT_COMMANDS_EXECUTE()
                 done
           fi
           zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
-          printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads used." >&2
+          printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads utilized" >&2
           zzDISP_POS=$(( zzDISP_POS + 1 )) ; [ ${zzDISP_POS} -gt ${#CUR_POS[@]} ] && zzDISP_POS=0
           sleep ${BT_SLEEP_TIME:-1}
     done
   )
   GET_DATE+=( $(date +%s) )
-  printf "\n" >&2
+  printf "\n\n" >&2
   BT_COMMAND_INDEX=0
   (
     while [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ] ; do
