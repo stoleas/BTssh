@@ -94,7 +94,7 @@ zzDISPLAY_PCT_STATUS()
           ###########################
           # Print Status
           ###########################
-          CUR_POS=( "   " ".  " ".. " "..." " .." "  ." "   " "   " "  ." " .." "..." ".. " ".  " "   " )
+          CUR_POS=( "-" "\\" "|" "/" )
           printf  "${CLEAR_LINE}${DPS_COLOR_BASE//X;Y/${DPS_COLOR_BY_PCT[${DPS_PCT_COLOR}]}}" >&2
           printf  " ${CUR_POS[zzDISP_POS]:-   } Processing ${DPS_PCT_VALUE[1]}%% ( ${DPS_CUR_VALUE} / ${DPS_MAX_VALUE} pid: $$ )"
           printf  "${DPS_COLOR_RESET}" >&2
