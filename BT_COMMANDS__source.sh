@@ -166,7 +166,7 @@ BT_COMMANDS_EXECUTE()
   [ ${BT_THREADS_MAX} -ge ${GET_LIMIT} ] && BT_THREADS_MAX=$(( GET_LIMIT - 1 ))
 
   #
-  BT_SLEEP_TIME=${BT_SLEEP_TIME:-$(sleep .05 && echo .05 || echo 1)}
+  BT_SLEEP_TIME=${BT_SLEEP_TIME:-$(sleep .001 && echo .001 || echo 1)}
 
   #
   rm -f /tmp/${USER}.$$.THREAD.*.log /tmp/${USER}.$$.THREAD.*.err 2>/dev/null
