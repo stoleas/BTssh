@@ -193,7 +193,6 @@ BT_COMMANDS_EXECUTE()
           zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
           printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads utilized" >&2
           zzDISP_POS=$(( zzDISP_POS + 1 )) ; [ ${zzDISP_POS} -gt ${#CUR_POS[@]} ] && zzDISP_POS=0
-          sleep ${BT_SLEEP_TIME:-1}
     done
   )
   GET_DATE+=( $(date +%s) )
