@@ -1,5 +1,11 @@
 #!/bin/bash
 
+C=(
+    $'\e[1;31m' # RED
+    $'\e[1;32m' # GREEN
+    $'\e[0m'    # RESET
+  )
+
 zzDISPLAY_PCT_STATUS()
 {
 
@@ -162,6 +168,7 @@ BT_COMMANDS_RESET()
 # Executes the commands that are in the BT_COMMANDS_IN variable.
 BT_COMMANDS_EXECUTE()
 {
+  GET_DATE=( $(date +%s) )
   # Gets the number of processors, if fails to find /proc/cpuinfo
   # sets the value of GET_PROCS to 1
   GET_PROCS=$( grep -c "^$" /proc/cpuinfo 2>/dev/null ) || GET_PROCS="1"
@@ -187,10 +194,9 @@ BT_COMMANDS_EXECUTE()
     while [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ] || [ ${#BT_THREADS_CUR[@]} -gt 0 ] ; do
           if    [ ${#BT_THREADS_CUR[@]} -lt ${BT_THREADS_MAX:-4} ] && [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ]
           then
-                LOG_FILE=/tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.log
-                ERR_FILE=/tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.err
-                touch "${LOG_FILE}" "${ERR_FILE}" && chmod 600  "${LOG_FILE}" "${ERR_FILE}"
-                eval "( ${BT_COMMANDS_IN[${BT_COMMAND_INDEX}]} ) 2>>\"${ERR_FILE}\"  1>>\"${LOG_FILE}\"" &
+                LOG_FILE=( /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.{log,err} )
+                touch "${LOG_FILE[0]}" "${LOG_FILE[1]}" && chmod 600  "${LOG_FILE[0]}" "${LOG_FILE[1]}"
+                eval "( ${BT_COMMANDS_IN[${BT_COMMAND_INDEX}]} ) 2>>\"${LOG_FILE[1]}\"  1>>\"${LOG_FILE[0]}\"" &
                 THREAD_PID=$!
                 BT_THREADS_CUR[THREAD_PID]=${BT_COMMANDS_IN[BT_COMMAND_INDEX]}
                 BT_COMMAND_INDEX=$(( BT_COMMAND_INDEX + 1 ))
@@ -205,13 +211,30 @@ BT_COMMANDS_EXECUTE()
           sleep ${BT_SLEEP_TIME:-1}
     done
   )
+  GET_DATE+=( $(date +%s) )
   printf "\n" >&2
   BT_COMMAND_INDEX=0
-  while [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ] ; do
-        cat /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.log
-        cat /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.err >&2
-        rm  /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.[le][or][gr] 2>/dev/null
-        BT_COMMAND_INDEX=$(( BT_COMMAND_INDEX + 1 ))
-  done
+  (
+    while [ ${BT_COMMAND_INDEX} -lt ${#BT_COMMANDS_IN[@]} ] ; do
+          LOG_FILE=( /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.{log,err} )
+          if    [ -s "${LOG_FILE[1]}" ]
+          then  printf "# BT_COMMANDS_IN[${BT_COMMAND_INDEX}]: %-$((20-${#BT_COMMAND_INDEX}))s{C[0]}[FAILED]${C[1]}\n### OK ###\n"
+                cat /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.log
+                printf "${C[0]}### ERROR ###\n"
+                cat /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.err >&2
+                echo "${C[2]}"
+                OUTCOME_COUNT[1]=$(( ${OUTCOME_COUNT[1]} + 1 ))
+          else  printf "# BT_COMMANDS_IN[${BT_COMMAND_INDEX}]: %-$((20-${#BT_COMMAND_INDEX}))s${C[1]}[PASSED]${C[2]}\n"
+                cat /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.log
+                echo ''
+                OUTCOME_COUNT[0]=$(( ${OUTCOME_COUNT[0]} + 1 ))
+          fi
+          rm  /tmp/${USER}.$$.THREAD.${BT_COMMAND_INDEX}.[le][or][gr] 2>/dev/null
+          BT_COMMAND_INDEX=$(( BT_COMMAND_INDEX + 1 ))
+    done
+    printf "#%.0s" {0..80} ; printf "\n# RESULTS\n" ; printf "#%.0s" {0..80} ; printf "\n"
+    printf "#\n#%10sPassed: ${C[1]}${OUTCOME_COUNT[0]}${C[2]}\n#%10sFailed: ${C[0]}${OUTCOME_COUNT[1]}${C[2]}\n#\n#%11sStart: $(date -d @${GET_DATE[0]})\n#%13sEnd: $(date -d @${GET_DATE[1]})\n# Seconds Elapsed: $((${GET_DATE[1]}-${GET_DATE[0]}))\n#\n"
+  )
+  unset GET_DATE
 }
 
