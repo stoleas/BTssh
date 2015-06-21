@@ -166,7 +166,7 @@ BT_COMMANDS_EXECUTE()
   [ ${BT_THREADS_MAX} -ge ${GET_LIMIT} ] && BT_THREADS_MAX=$(( GET_LIMIT - 1 ))
 
   #
-  BT_SLEEP_TIME=${BT_SLEEP_TIME:-$(sleep .15 && echo .15 || echo 1)}
+  BT_SLEEP_TIME=${BT_SLEEP_TIME:-$(sleep .05 && echo .05 || echo 1)}
 
   #
   rm -f /tmp/${USER}.$$.THREAD.*.log /tmp/${USER}.$$.THREAD.*.err 2>/dev/null
@@ -193,6 +193,7 @@ BT_COMMANDS_EXECUTE()
           zzDISPLAY_PCT_STATUS $(( BT_COMMAND_INDEX + 1 )) ${#BT_COMMANDS_IN[@]} 0 >&2
           printf " %s" "${#BT_THREADS_CUR[@]}/${BT_THREADS_MAX} threads utilized" >&2
           zzDISP_POS=$(( zzDISP_POS + 1 )) ; [ ${zzDISP_POS} -gt ${#CUR_POS[@]} ] && zzDISP_POS=0
+          sleep ${BT_SLEEP_TIME:-1}
     done
   )
   GET_DATE+=( $(date +%s) )
