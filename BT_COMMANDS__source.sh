@@ -8,96 +8,95 @@ C=(
 
 zzDISPLAY_PCT_STATUS()
 {
-
-          ###########################
-          # Script Required Variables
-          ###########################
-          CHARS_ESC_LBRACKET=${CHARS_ESC_LBRACKET:-$( printf "\e[" )}
-          CHARS_NEW_LINE="\n"
-          CLEAR_LINE_TEMPLATE=${CHARS_NEW_LINE}${CHARS_ESC_LBRACKET}A${CHARS_ESC_LBRACKET}K
-          CLEAR_LINE=${CLEAR_LINE_TEMPLATE//500/${COLUMNS:-80}}
-          DPS_COLOR_BASE=${CHARS_ESC_LBRACKET}"X;Ym"
-          DPS_COLOR_RESET=${DPS_COLOR_BASE//X;Y/0}
-          DPS_COLOR_BY_PCT=(  #   RED       #  Yellow    # LIGHT-BLUE   #   GREEN
-                              [25]="1;31"   [50]="1;33"  [75]="1;36"    [100]="1;32"
-                           )
-
-
-          ###########################
-          # LAST Variables
-          ###########################
-          DPS_LAST_VALUE[0]=${DPS_CUR_VALUE[0]:--1}
-          DPS_LAST_VALUE[1]=${DPS_CUR_VALUE[1]:--1}
-          DPS_LAST_MAX_VALUE=${DPS_MAX_VALUE:--1}
-          DPS_LAST_PCT_VALUE[0]=${DPS_PCT_VALUE[0]:--1}
-          DPS_LAST_PCT_VALUE[1]=${DPS_PCT_VALUE[1]:--1}
-          DPS_LAST_FRAME_SECONDS=${DPS_CUR_FRAME_SECONDS:-${SECONDS:-0}}
-
-          ###########################
-          # User Input Variables
-          ###########################
-          DPS_CUR_VALUE=${1:-${DPS_LAST_VALUE}}
-          DPS_MAX_VALUE=${2:-${DPS_LAST_MAX_VALUE}}
-          if [ $(( DPS_CUR_VALUE )) -gt $(( DPS_MAX_VALUE )) ]
-          then  DPS_CUR_VALUE=${DPS_MAX_VALUE}
-          fi
-          DPS_ZEROS=0${DPS_MAX_VALUE}000
-          DPS_REPORT_ONLY_ON_PCT_CHANGE=${3:-1}
+  ###########################
+  # Script Required Variables
+  ###########################
+  CHARS_ESC_LBRACKET=${CHARS_ESC_LBRACKET:-$( printf "\e[" )}
+  CHARS_NEW_LINE="\n"
+  CLEAR_LINE_TEMPLATE=${CHARS_NEW_LINE}${CHARS_ESC_LBRACKET}A${CHARS_ESC_LBRACKET}K
+  CLEAR_LINE=${CLEAR_LINE_TEMPLATE//500/${COLUMNS:-80}}
+  DPS_COLOR_BASE=${CHARS_ESC_LBRACKET}"X;Ym"
+  DPS_COLOR_RESET=${DPS_COLOR_BASE//X;Y/0}
+  DPS_COLOR_BY_PCT=(  #   RED       #  Yellow    # LIGHT-BLUE   #   GREEN
+                      [25]="1;31"   [50]="1;33"  [75]="1;36"    [100]="1;32"
+                   )
 
 
-          ###########################
-          # Variable Abuse
-          ###########################
-          DPS_CUR_FRAME_SECONDS=${SECONDS}
-          DPS_PCT_VALUE=$(( 9${DPS_MAX_VALUE//[^9]/9}999 / DPS_MAX_VALUE * DPS_CUR_VALUE ))
-          DPS_PCT_VALUE=${DPS_ZEROS:0:${#DPS_ZEROS} - ${#DPS_PCT_VALUE}}${DPS_PCT_VALUE}
-          DPS_PCT_VALUE=${DPS_PCT_VALUE:0:4}
+  ###########################
+  # LAST Variables
+  ###########################
+  DPS_LAST_VALUE[0]=${DPS_CUR_VALUE[0]:--1}
+  DPS_LAST_VALUE[1]=${DPS_CUR_VALUE[1]:--1}
+  DPS_LAST_MAX_VALUE=${DPS_MAX_VALUE:--1}
+  DPS_LAST_PCT_VALUE[0]=${DPS_PCT_VALUE[0]:--1}
+  DPS_LAST_PCT_VALUE[1]=${DPS_PCT_VALUE[1]:--1}
+  DPS_LAST_FRAME_SECONDS=${DPS_CUR_FRAME_SECONDS:-${SECONDS:-0}}
 
-          if    [ "${DPS_PCT_VALUE:0:3}" == "000" ]
-          then  DPS_PCT_VALUE[1]=0
-          elif  [ "${DPS_PCT_VALUE:0:2}" == "00" ]
-          then  DPS_PCT_VALUE[1]=0
-          elif  [ "${DPS_PCT_VALUE:0:1}" == "0" ]
-          then  DPS_PCT_VALUE[1]=${DPS_PCT_VALUE:1:1}
-          else  DPS_PCT_VALUE[1]=${DPS_PCT_VALUE:0:2}
-          fi
+  ###########################
+  # User Input Variables
+  ###########################
+  DPS_CUR_VALUE=${1:-${DPS_LAST_VALUE}}
+  DPS_MAX_VALUE=${2:-${DPS_LAST_MAX_VALUE}}
+  if [ $(( DPS_CUR_VALUE )) -gt $(( DPS_MAX_VALUE )) ]
+  then  DPS_CUR_VALUE=${DPS_MAX_VALUE}
+  fi
+  DPS_ZEROS=0${DPS_MAX_VALUE}000
+  DPS_REPORT_ONLY_ON_PCT_CHANGE=${3:-1}
 
-          if    [ "${DPS_CUR_VALUE}" != "${DPS_MAX_VALUE}" ]
-          then
-                DPS_PCT_VALUE[1]=${DPS_PCT_VALUE[1]:0:2}
-                DPS_PCT_VALUE[2]=${DPS_PCT_VALUE:0:2}
-          else
-                DPS_PCT_VALUE[1]=100
-                DPS_PCT_VALUE[2]=100
-          fi
 
-          if    [ ${DPS_REPORT_ONLY_ON_PCT_CHANGE:=1} -eq 1  ] && [ "${DPS_LAST_PCT_VALUE[1]}" == "${DPS_PCT_VALUE[1]}" ]
-          then
-                DPS_FRAMES_SKIPPED=$(( ${DPS_FRAMES_SKIPPED:-0} + 1 ))
-                return 0
-          else
-                DPS_FRAMES_NOT_SKIPPED=$(( ${DPS_FRAMES_NOT_SKIPPED:-0} + 1 ))
-          fi
+  ###########################
+  # Variable Abuse
+  ###########################
+  DPS_CUR_FRAME_SECONDS=${SECONDS}
+  DPS_PCT_VALUE=$(( 9${DPS_MAX_VALUE//[^9]/9}999 / DPS_MAX_VALUE * DPS_CUR_VALUE ))
+  DPS_PCT_VALUE=${DPS_ZEROS:0:${#DPS_ZEROS} - ${#DPS_PCT_VALUE}}${DPS_PCT_VALUE}
+  DPS_PCT_VALUE=${DPS_PCT_VALUE:0:4}
 
-          for DPS_PCT_COLOR in ${!DPS_COLOR_BY_PCT[*]} ; do 
-              if    [ ${DPS_PCT_VALUE[1]} -le ${DPS_PCT_COLOR} ]
-              then  break
-              fi
-          done
+  if    [ "${DPS_PCT_VALUE:0:3}" == "000" ]
+  then  DPS_PCT_VALUE[1]=0
+  elif  [ "${DPS_PCT_VALUE:0:2}" == "00" ]
+  then  DPS_PCT_VALUE[1]=0
+  elif  [ "${DPS_PCT_VALUE:0:1}" == "0" ]
+  then  DPS_PCT_VALUE[1]=${DPS_PCT_VALUE:1:1}
+  else  DPS_PCT_VALUE[1]=${DPS_PCT_VALUE:0:2}
+  fi
 
-          if    [ "${DPS_LAST_PCT_VALUE[1]}" != "${DPS_PCT_VALUE[1]}" ]
-          then
-                DPS_START_TIME_BY_PERCENT[${DPS_PCT_VALUE[1]} + 1 ]=${SECONDS}
-                DPS_END_TIME_BY_PERCENT[${DPS_PCT_VALUE[1]}]=${SECONDS}
-          fi
+  if    [ "${DPS_CUR_VALUE}" != "${DPS_MAX_VALUE}" ]
+  then
+        DPS_PCT_VALUE[1]=${DPS_PCT_VALUE[1]:0:2}
+        DPS_PCT_VALUE[2]=${DPS_PCT_VALUE:0:2}
+  else
+        DPS_PCT_VALUE[1]=100
+        DPS_PCT_VALUE[2]=100
+  fi
 
-          ###########################
-          # Print Status
-          ###########################
-          CUR_POS=( "-" "\\" "|" "/" )
-          printf  "${CLEAR_LINE}${DPS_COLOR_BASE//X;Y/${DPS_COLOR_BY_PCT[${DPS_PCT_COLOR}]}}" >&2
-          printf  " ${CUR_POS[zzDISP_POS]:-   } Processing ${DPS_PCT_VALUE[1]}%% ( ${DPS_CUR_VALUE} / ${DPS_MAX_VALUE} pid: $$ )"
-          printf  "${DPS_COLOR_RESET}" >&2
+  if    [ ${DPS_REPORT_ONLY_ON_PCT_CHANGE:=1} -eq 1  ] && [ "${DPS_LAST_PCT_VALUE[1]}" == "${DPS_PCT_VALUE[1]}" ]
+  then
+        DPS_FRAMES_SKIPPED=$(( ${DPS_FRAMES_SKIPPED:-0} + 1 ))
+        return 0
+  else
+        DPS_FRAMES_NOT_SKIPPED=$(( ${DPS_FRAMES_NOT_SKIPPED:-0} + 1 ))
+  fi
+
+  for DPS_PCT_COLOR in ${!DPS_COLOR_BY_PCT[*]} ; do 
+      if    [ ${DPS_PCT_VALUE[1]} -le ${DPS_PCT_COLOR} ]
+      then  break
+      fi
+  done
+
+  if    [ "${DPS_LAST_PCT_VALUE[1]}" != "${DPS_PCT_VALUE[1]}" ]
+  then
+        DPS_START_TIME_BY_PERCENT[${DPS_PCT_VALUE[1]} + 1 ]=${SECONDS}
+        DPS_END_TIME_BY_PERCENT[${DPS_PCT_VALUE[1]}]=${SECONDS}
+  fi
+
+  ###########################
+  # Print Status
+  ###########################
+  CUR_POS=( "-" "\\" "|" "/" )
+  printf  "${CLEAR_LINE}${DPS_COLOR_BASE//X;Y/${DPS_COLOR_BY_PCT[${DPS_PCT_COLOR}]}}" >&2
+  printf  " ${CUR_POS[zzDISP_POS]:-   } Processing ${DPS_PCT_VALUE[1]}%% ( ${DPS_CUR_VALUE} / ${DPS_MAX_VALUE} pid: $$ )"
+  printf  "${DPS_COLOR_RESET}" >&2
 }
 
 
